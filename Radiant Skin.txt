@@ -1,0 +1,141 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+/*PROTOTYPES*/
+void get_info(float oil_values[4]);
+void determine_skin_type(float avg_oil, float oil_values[4], char skin_type[10]);
+void print_skincare_routine(const char *skin_type);
+void find_suitable_products(float avg_oil, float budget);
+
+FILE *skincare_guide;
+
+int main() {
+    char name[15], skin_type[10];
+    float avg_oil = 0, oil_values[4], budget;
+    int key, i;
+
+    skincare_guide = fopen("skincare_guide.txt", "w");
+    if (skincare_guide == NULL) {
+        printf("Unable to create your file!!");
+        return 1;
+    }
+
+    printf("Please enter your name: ");
+    fgets(name, sizeof(name), stdin);
+    fprintf(skincare_guide, "Hello %s, welcome to our store. \n\n", name);
+    printf("To help you, I need you to enter the oil values of different areas of your face.\nIf you know these values, press 1, if you don't, press 2.\n");
+    scanf("%d", &key);
+
+    /* User is asked to press a key. */
+    switch (key) {
+        case 1:
+            /* User provides specific information. */
+            get_info(oil_values);
+
+            for (i = 0; i < 4; i++) {
+                if (oil_values[i] > 100 || oil_values[i] < 1) {
+                    printf("INVALID INPUT! Please enter a value between 1 and 100.\n");
+                    return 0;
+                }
+                avg_oil += oil_values[i];
+            }
+            avg_oil /= 4;
+
+            /* Skin type is determined and routine is created based on average oil. */
+            fprintf(skincare_guide, "The average oil value of your face is %f \n\n\n", avg_oil);
+            determine_skin_type(avg_oil, oil_values, skin_type);
+            print_skincare_routine(skin_type);
+
+            printf("Please enter a budget value.\n");
+            scanf("%f", &budget);
+
+            /* User is shown suitable product locations based on their budget. */
+            find_suitable_products(avg_oil, budget);
+            break;
+
+        case 2:
+            printf("Dear customer, you can measure the oil values of different areas of your face using the machine next to the counter.\n");
+            break;
+
+        default:
+            printf("INVALID KEY! PLEASE PRESS A VALID KEY.\n");
+            break;
+    }
+
+    fprintf(skincare_guide, "\n       THANK YOU FOR CHOOSING US. WE LOOK FORWARD TO SEEING YOU AGAIN.\n");
+    fclose(skincare_guide); 
+    printf("Your data has been successfully saved to your file.\n");
+
+    return 0;
+}
+
+void get_info(float oil_values[4]) {
+    const char *areas[] = {"nose", "forehead", "chin", "cheeks"};
+    int i;
+    for (i = 0; i < 4; i++) {
+        printf("Please enter the oil value of your %s area. (1-100)\n", areas[i]);
+        scanf("%f", &oil_values[i]);
+    }
+}
+
+void determine_skin_type(float avg_oil, float oil_values[4], char skin_type[10]) {
+    if (avg_oil >= 1 && avg_oil <= 30) {
+        strcpy(skin_type, "Dry");
+    }
+    else if (avg_oil > 30 && avg_oil <= 60) {
+        if ((oil_values[0] > 60 || oil_values[1] > 60) && (oil_values[2] <= 30 && oil_values[3] <= 30)) {
+            strcpy(skin_type, "Combination");
+        }
+        else {
+            strcpy(skin_type, "Normal");
+        }
+    }
+    else {
+        strcpy(skin_type, "Oily");
+    }
+}
+
+void print_skincare_routine(const char *skin_type) {
+    if (strcmp(skin_type, "Dry") == 0) {
+        fprintf(skincare_guide, "Skincare Routine for Dry Skin:\n"
+        "- Cleanser: Gentle cleansers in cream or milk form should be used. Avoid foaming cleansers as they can dry out the skin. \n"
+        "- Toner: A toner with moisturizing properties, free from alcohol, should be used. \n"
+        "- Serum: A serum with hydrating ingredients such as hyaluronic acid and vitamin E is recommended. \n"
+        "- Moisturizer: Creams with intensive moisturizing properties should be used to keep the skin soft and hydrated. \n"
+        "- Sunscreen: A sunscreen with at least SPF 30 should be used. \n"
+        "- Night Care: A more intense moisturizer or face oil can be applied at night. \n\n");
+    }
+    else if (strcmp(skin_type, "Normal") == 0) {
+        fprintf(skincare_guide, "Skincare Routine for Normal Skin:\n"
+        "- Toner: A light and moisturizing toner should be used. \n"
+        "- Serum: Vitamin C serums help enhance the skin's radiance. \n"
+        "- Moisturizer: A light moisturizer helps maintain the skin's moisture balance.\n"
+        "- Sunscreen: Sunscreen with SPF 30 or 50 should be applied to protect from sun exposure. \n"
+        "- Night Care: A light night cream or hydrating serum helps support skin renewal. \n\n");
+    }
+    else if (strcmp(skin_type, "Combination") == 0) {
+        fprintf(skincare_guide, "Skincare Routine for Combination Skin:\n"
+        "- Cleanser: Gel or foam-based cleansers are great for controlling excess oil. \n"
+        "- Toner: Toners that help shrink pores, especially for the T-zone, can be used. \n"
+        "- Serum: Serums with Vitamin C or niacinamide help balance the skin. \n"
+        "- Moisturizer: Light, oil-free formulas are ideal. Use less on the T-zone. \n"
+        "- Sunscreen: Matte-finish, SPF 30 and higher sunscreens are good for combination skin. \n"
+        "- Night Care: Sebum-balancing products for the T-zone and richer moisturizers for dry areas can be used at night. \n\n");
+    }
+    else {
+        fprintf(skincare_guide, "Skincare Routine for Oily Skin:\n"
+        "- Cleanser: Salicylic acid-based cleansers help remove excess oil and unclog pores. \n"
+        "- Toner: Alcohol-free toners that help control sebum can be used. \n"
+        "- Serum: Serums with niacinamide or zinc help regulate oil production. \n"
+        "- Sunscreen: Oil-free, mattifying sunscreens with SPF 30 or higher are suitable. \n"
+        "- Night Care: Lightweight, oil-free night creams or pore-minimizing serums can be used. \n\n");
+    }
+}
+
+void find_suitable_products(float avg_oil, float budget) {
+    int shelfNo = (avg_oil <= 30) ? 1 : (avg_oil <= 60) ? 2 : 3;
+    char shelfSection = (budget <= 500) ? 'A' : (budget <= 1000) ? 'B' : 'C';
+    fprintf(skincare_guide, "The suitable products for you can be found in Shelf%d-%c.\n", shelfNo, shelfSection);
+}
